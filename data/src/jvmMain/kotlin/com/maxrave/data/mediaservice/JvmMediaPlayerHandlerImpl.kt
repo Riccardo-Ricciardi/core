@@ -775,7 +775,7 @@ class JvmMediaPlayerHandlerImpl(
                                         ?: "http://i.ytimg.com/vi/${songEntity.videoId}/maxresdefault.jpg",
                                     "=w544-h544",
                                 )
-                            if (songEntity.thumbnails != thumbUrl) {
+                            if (shouldReplaceStoredArtwork(songEntity.thumbnails, thumbUrl)) {
                                 songRepository.updateThumbnailsSongEntity(thumbUrl, songEntity.videoId).singleOrNull()?.let {
                                     Logger.d(TAG, "getDataOfNowPlayingState: Updated thumbs $it")
                                 }

@@ -30,6 +30,7 @@ private const val PLAY_SETTLE_TIMEOUT_MS = 2_000L
 
 /** Poll step for the settle wait; playWhenReady has no flow to collect. */
 private const val PLAY_SETTLE_POLL_MS = 50L
+private const val GUEST_RESYNC_INTERVAL_MS = 20_000L
 private const val TAG = "ListenTogetherBridge"
 
 /** What the guest reacts to. A data class so `distinctUntilChanged` compares every field. */
@@ -90,6 +91,7 @@ class ListenTogetherPlaybackBridge(
         scope.launch { suppressCrossfadeWhileInRoom() }
         scope.launch { watchRoomForGuests() }
         scope.launch { resyncGuestOnResume() }
+        scope.launch { keepGuestInSync() }
         scope.launch { publishCurrentStateOnJoin() }
         scope.launch { publishStateWhenSomeoneArrives() }
         scope.launch { publishQueueAsHost() }
@@ -134,6 +136,16 @@ class ListenTogetherPlaybackBridge(
      * right place instead of wherever this device stopped. This is what Metrolist's manager does
      * (`requestSync` — "call this when a guest presses play/pause").
      */
+    private suspend fun keepGuestInSync() {
+        while (true) {
+            delay(GUEST_RESYNC_INTERVAL_MS)
+            val room = repository.room.value
+            if (!room.inRoom || room.isHost || applyingRemote) continue
+            if (!handler.player.playWhenReady) continue
+            repository.requestSync()
+        }
+    }
+
     private suspend fun resyncGuestOnResume() {
         handler.controlState
             .map { it.isPlaying }

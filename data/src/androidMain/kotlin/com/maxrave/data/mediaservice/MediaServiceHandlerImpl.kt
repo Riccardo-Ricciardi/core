@@ -668,7 +668,7 @@ internal class MediaServiceHandlerImpl(
                         Logger.d(TAG, "getDataOfNowPlayingState before: $thumbUrl")
                         thumbUrl = Regex("=w\\d+-h\\d+").replace(thumbUrl, "=w544-h544")
                         Logger.d(TAG, "getDataOfNowPlayingState: $thumbUrl")
-                        if (songEntity.thumbnails != thumbUrl) {
+                        if (shouldReplaceStoredArtwork(songEntity.thumbnails, thumbUrl)) {
                             songRepository.updateThumbnailsSongEntity(thumbUrl, songEntity.videoId).singleOrNull()?.let {
                                 Logger.d(TAG, "getDataOfNowPlayingState: Updated thumbs $it")
                             }
